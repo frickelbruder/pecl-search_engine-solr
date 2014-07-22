@@ -1182,6 +1182,75 @@ PHP_SOLR_API int solr_json_to_php_native(solr_string_t *buffer, const solr_char_
 
 	return (int) json_error;
 }
+
+PHP_SOLR_API int solr_sarray_to_sobject(solr_string_t *buffer TSRMLS_DC)
+{
+    char * regex = "/a\\:([0-9]+):{s/i", *result;
+    int regex_len = sizeof(regex);
+    zval * replace_val;
+    int * result_len = (int *)emalloc(sizeof(int));
+    int limit = -1;
+    int replace_count = -1;
+
+    MAKE_STD_ZVAL(replace_val);
+    ZVAL_STRING(replace_val,"O:10:\"SolrObject\":\\1:{s",1);
+
+    result = php_pcre_replace(
+            regex,
+            regex_len,
+            (*buffer).str,
+            (*buffer).len,
+            replace_val,
+            0,
+            result_len,
+            limit,
+            &replace_count
+            TSRMLS_CC
+    );
+
+    solr_string_set_ex(buffer, (solr_char_t *)result, (size_t)*result_len);
+//    fprintf(stdout, "%s", buffer->str);
+    efree(result_len);
+    efree(result);
+    zval_ptr_dtor(&replace_val);
+
+    return SUCCESS;
+}
+
+PHP_SOLR_API int solr_sobject_to_sarray(solr_string_t *buffer TSRMLS_DC)
+{
+    char * regex = "/O:10:\"SolrObject\":([0-9]+):{s/i", *result;
+    int regex_len = sizeof(regex);
+    zval * replace_val;
+    int * result_len = (int *)emalloc(sizeof(int));
+    int limit = -1;
+    int replace_count = -1;
+
+    MAKE_STD_ZVAL(replace_val);
+    ZVAL_STRING(replace_val,"a:\\1:{s",1);
+
+    result = php_pcre_replace(
+            regex,
+            regex_len,
+            (*buffer).str,
+            (*buffer).len,
+            replace_val,
+            0,
+            result_len,
+            limit,
+            &replace_count
+            TSRMLS_CC
+    );
+
+    solr_string_set_ex(buffer, (solr_char_t *)result, (size_t)*result_len);
+    efree(result_len);
+    efree(result);
+    zval_ptr_dtor(&replace_val);
+
+    return SUCCESS;
+}
+
+
 /* }}} */
 
 /*

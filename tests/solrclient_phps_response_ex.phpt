@@ -19,7 +19,7 @@ $client = new SolrClient ( $options );
 $query = new SolrQuery ( "iTunes" );
 $response = $client->query($query);
 $responseSolrObj = $response->getResponse();
-var_dump(is_array($responseSolrObj));
+var_dump($responseSolrObj instanceof SolrObject);
 ?>
 --EXPECTF--
 bool(true)
